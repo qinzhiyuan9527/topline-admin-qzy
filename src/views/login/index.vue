@@ -24,7 +24,7 @@
             <span>我已阅读并同意<a href="#">用户协议</a>和<a href="#">隐私条款</a></span>
           </el-form-item>
           <el-form-item>
-          <el-button type="primary" class="denglu" @click="handleLogin">登陆</el-button>
+          <el-button type="primary" class="denglu" @click="handleLogin" :loading="is">登陆</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -35,13 +35,14 @@
 <script>
 import axios from 'axios'
 import '@/vendor/gt'
+const Seconscode = 60
 
 export default {
   name: 'login',
   data () {
     return {
       ruleForm: {
-        mobile: '17334297852',
+        mobile: '',
         code: '',
         checked: ''
       },
@@ -61,11 +62,11 @@ export default {
       },
       captchaObj: null,
       loginsj: '',
-      codeSecons: 5,
+      codeSecons: Seconscode,
       TimingContent: '获取验证码',
       Eliminate: null,
       sendMoblie: '',
-      is: ''
+      is: false
     }
   },
   methods: {
@@ -80,6 +81,7 @@ export default {
           // 手机号码有效初始化验证码
           // this.showGeetest()
           if (this.ruleForm.mobile !== this.sendMoblie) {
+            document.body.removeChild(document.querySelector('.geetest_panel'))
             this.showGeetest()
           } else {
             this.captchaObj.verify()
@@ -145,46 +147,43 @@ export default {
         if (valid) {
           this.LoginLand()
         } else {
-          alert('验证码或手机号错误')
+          alert('请查看是否有未选择的内容')
         }
       })
     },
     // 实现登陆功能
     LoginLand () {
-      if (this.is) {
-        return
-      }
       console.log(this.ruleForm.mobile)
-      this.is = false
+      this.is = true
       axios({
         method: 'POST',
         url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
         data: this.ruleForm
       }).then(res => {
-        this.is = true
+        // 登陆成功在本地记录用户信息
+        window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
         this.$message({
           message: '登陆成功',
           type: 'success'
         })
+        this.is = false
+        // 跳转到home页面
         this.$router.push({ name: 'home' })
-
-        console.log(res.data)
       }).catch(err => {
         if (err.response.status === 400) {
-          this.is = true
           this.$message.error('登录失败，手机号或验证码错误')
+          this.is = false
         }
       })
     },
     // 倒计时
     timing () {
       this.Eliminate = setInterval(() => {
-        console.log(this.is)
         this.codeSecons--
         if (this.codeSecons <= 0) {
           this.TimingContent = '获取验证码'
           clearInterval(this.Eliminate)
-          this.codeSecons = 5
+          this.codeSecons = Seconscode
           this.Eliminate = null
         }
       }, 1000)
