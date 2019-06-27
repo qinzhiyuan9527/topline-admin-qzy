@@ -5,21 +5,23 @@
     <div slot="header" class="clearfix">
       <span>卡片名称</span>
     </div>
-    <el-form ref="form" :model="form" label-width="80px">
-      <el-form-item label="特殊资源">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="线上品牌商赞助"></el-radio>
-          <el-radio label="线下场地免费"></el-radio>
+    <el-form ref="filterparams" :model="filterparams" label-width="80px">
+      <el-form-item label="文章状态">
+        <el-radio-group v-model="filterparams.status">
+          <el-radio label="">全部</el-radio>
+          <el-radio v-for="(item, index) in statStype" :key="index" :label="index">{{item.label}}</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="活动区域">
-        <el-select v-model="form.region" placeholder="请选择活动区域">
-          <el-option label="区域一"></el-option>
+      <el-form-item label="频道列表">
+        <el-select v-model="filterparams.channel_id" placeholder="请选择频道">
+          <el-option v-for="item in channelsData" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="时间选择">
         <el-date-picker
-          v-model="value1"
+          v-model="filterparams.begin_pubdate"
+          value-format="yyyy-MM-dd"
+          @change="articleChange"
           type="daterange"
           range-separator="至"
           start-placeholder="开始日期"
@@ -50,7 +52,14 @@
       <el-table-column
         prop="title"
         label="标题"
-        width="350">
+        width="200">
+      </el-table-column>
+      <el-table-column
+        prop=""
+        label="状态">
+        <template slot-scope="scope">
+          <el-tag :type="statStype[scope.row.status].type">{{statStype[scope.row.status].label}}</el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         prop="pubdate"
@@ -92,22 +101,53 @@ export default {
       tableData: [], // 列表数据
       totalCount: 0, // 总条目数
       value1: {},
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      },
-      articleOk: false
+      // form: {
+      //   name: '',
+      //   region: '',
+      //   date1: '',
+      //   date2: '',
+      //   delivery: false,
+      //   type: [],
+      //   resource: '',
+      //   desc: ''
+      // },
+      articleOk: false,
+      statStype: [
+        {
+          type: 'info',
+          label: '草稿'
+        },
+        {
+          type: '',
+          label: '待审核'
+        },
+        {
+          type: 'success',
+          label: '审核通过'
+        },
+        {
+          type: 'warning',
+          label: '审核失败'
+        },
+        {
+          type: 'danger',
+          label: '已删除'
+        }
+      ],
+      channelsData: [], // 频道列表数据
+      filterparams: {
+        status: '', // 文章状态
+        channel_id: '', // 频道id
+        begin_pubdate: '', // 起始时间
+        end_pubdate: '' // 截止时间
+      }
     }
   },
   created () {
     // 获取文章列表
     this.loadArticles()
+    // 获取频道列表数据
+    this.articleChannels()
   },
   methods: {
     loadArticles (page = 1) {
@@ -139,6 +179,20 @@ export default {
       }).then(data => {
         console.log(data)
       })
+    },
+    // 获取频道列表数据
+    articleChannels () {
+      this.$http({
+        method: 'GET',
+        url: '/channels'
+      }).then(data => {
+        // console.log(data.channels)
+        this.channelsData = data.channels
+      })
+    },
+    articleChange (value) {
+      this.filterparams.begin_pubdate = value[0]
+      this.filterparams.end_pubdate = value[1]
     }
   }
 }
