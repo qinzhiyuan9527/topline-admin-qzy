@@ -1,82 +1,49 @@
 <template>
-<div id="AppHeader">
-  <div>
-    <img src="./logo_admin.png" alt="">
+  <div id="AppAside">
+    <el-row :gutter="20" class="app-header">
+      <el-col :span="14" class="app-header-s"><i class="el-icon-s-unfold"></i>江苏传智播客教育科技股份有限公司</el-col>
+      <el-col :span="4" :offset="6">
+        <el-dropdown>
+        <span class="el-dropdown-link">
+          <img width=30 :src="userInfo.photo" alt="">
+          {{userInfo.name}}<i class="el-icon-caret-bottom el-icon--right"></i>
+        </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>个人信息</el-dropdown-item>
+            <el-dropdown-item>git地址</el-dropdown-item>
+            <el-dropdown-item>退出</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-col>
+    </el-row>
   </div>
-  <el-menu
-    default-active="2"
-    class="el-menu-vertical-demo"
-    @open="handleOpen"
-    @close="handleClose"
-    background-color="#545c64"
-    text-color="#fff"
-    active-text-color="#ffd04b">
-    <el-menu-item index="3">
-      <i class="el-icon-s-shop"></i>
-      <span slot="title">首页</span>
-    </el-menu-item>
-    <el-submenu index="1">
-      <template slot="title">
-        <i class="el-icon-reading"></i>
-        <span>内容管理</span>
-      </template>
-      <el-menu-item-group>
-        <el-menu-item index="1-1">发布文章</el-menu-item>
-        <el-menu-item index="1-2">内容列表</el-menu-item>
-        <el-menu-item index="1-3">评论列表</el-menu-item>
-        <el-menu-item index="1-4">素材管理</el-menu-item>
-      </el-menu-item-group>
-    </el-submenu>
-    <el-submenu index="2">
-      <template slot="title">
-        <i class="el-icon-video-camera-solid"></i>
-        <span>粉丝管理</span>
-      </template>
-      <el-menu-item-group>
-        <el-menu-item index="2-1">图文数据</el-menu-item>
-        <el-menu-item index="2-2">粉丝概况</el-menu-item>
-        <el-menu-item index="2-3">粉丝画像</el-menu-item>
-        <el-menu-item index="2-4">粉丝列表</el-menu-item>
-      </el-menu-item-group>
-    </el-submenu>
-    <el-menu-item index="4">
-      <i class="el-icon-s-custom"></i>
-      <span slot="title">账户信息</span>
-    </el-menu-item>
-  </el-menu>
-</div>
 </template>
 
 <script>
 export default {
   name: 'AppHeader',
   data () {
-    return {}
-  },
-  methods: {
-    handleOpen (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      console.log(key, keyPath)
+    return {
+      userInfo: {}
     }
+  },
+  created () {
+    this.userInfo = JSON.parse(window.localStorage.getItem('user_info'))
   }
 }
 </script>
 
 <style lang="less" scoped>
-#AppHeader {
-  height: 100%;
-  background-color: #323745;
-  div {
-    text-align: center;
-    width: 100%;
-    img {
-      padding: 10px 0px;
+  #AppAside {
+    background-color: #ccc;
+    .app-header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      .app-header-s {
+        margin-left: 10px;
+        font-size: 16px;
+      }
     }
   }
-  .el-menu {
-    height: 100%;
-  }
-}
 </style>

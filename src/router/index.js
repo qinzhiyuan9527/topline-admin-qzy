@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import nprogress from 'nprogress'
 
 Vue.use(Router)
 
@@ -29,13 +30,21 @@ const router = new Router({
           name: 'publish',
           path: '/publish',
           component: () => import('@/views/publish')
+        },
+        {
+          name: 'article',
+          path: '/article',
+          component: () => import('@/views/article')
         }
       ]
     }
   ]
 })
 
+// 路由开始进入
 router.beforeEach((to, from, next) => {
+  // 页面的加载进度条动画
+  nprogress.start()
   const userInfo = window.localStorage.getItem('user_info')
   if (to.path !== '/login') {
     if (!userInfo) {
@@ -51,6 +60,11 @@ router.beforeEach((to, from, next) => {
     }
     next()
   }
+})
+
+// 路由结束进入
+router.afterEach((to, from) => {
+  nprogress.done()
 })
 
 export default router

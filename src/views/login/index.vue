@@ -33,7 +33,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import '@/vendor/gt'
 const Seconscode = 60
 
@@ -42,9 +41,11 @@ export default {
   data () {
     return {
       ruleForm: {
-        mobile: '',
-        code: '',
-        checked: ''
+        // mobile: '13911111111',
+        // code: '123456',
+        mobile: '15128488941',
+        code: '246810',
+        checked: true
       },
       rules: {
         mobile: [
@@ -70,6 +71,34 @@ export default {
     }
   },
   methods: {
+    // 实现登陆功能
+    LoginLand () {
+      console.log(this.ruleForm.mobile)
+      this.is = true
+      this.$http({
+        method: 'POST',
+        url: '/authorizations',
+        data: this.ruleForm
+      }).then(res => {
+        console.log(res)
+        // 登陆成功在本地记录用户信息
+        // console.log(res)
+        window.localStorage.setItem('user_info', JSON.stringify(res))
+        this.$message({
+          message: '登陆成功',
+          type: 'success'
+        })
+        this.is = false
+        // 跳转到home页面
+        this.$router.push({ name: 'home' })
+      }).catch(err => {
+        console.dir(err)
+        if (err.response.status === 400) {
+          this.$message.error('登录失败，手机号或验证码错误')
+        }
+        this.is = false
+      })
+    },
     LoginVerificationCode () {
       // 校验手机号是否有效
       this.$refs['ruleForm'].validateField('mobile', errorMessage => {
@@ -94,9 +123,9 @@ export default {
     // 人机交互获取验证码
     showGeetest () {
       let { mobile } = this.ruleForm
-      axios({
+      this.$http({
         method: 'GET',
-        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
+        url: `/captchas/${mobile}`
       }).then(res => {
         let { data } = res.data
         window.initGeetest({
@@ -121,9 +150,9 @@ export default {
               geetest_seccode: seccode
             } = captchaObj.getValidate()
             // 获取验证码
-            axios({
+            this.$http({
               method: 'GET',
-              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
+              url: `/codes/${mobile}`,
               // `params` 是即将与请求一起发送的 URL 参数
               // 必须是一个无格式对象(plain object)或 URLSearchParams 对象
               params: {
@@ -143,7 +172,7 @@ export default {
     },
     // 表单校验是否同过
     handleLogin () {
-      this.$refs['ruleForm'].validate((valid) => {
+      this.$refs['ruleForm'].validate(valid => {
         if (valid) {
           this.LoginLand()
         } else {
@@ -151,31 +180,7 @@ export default {
         }
       })
     },
-    // 实现登陆功能
-    LoginLand () {
-      console.log(this.ruleForm.mobile)
-      this.is = true
-      axios({
-        method: 'POST',
-        url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
-        data: this.ruleForm
-      }).then(res => {
-        // 登陆成功在本地记录用户信息
-        window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
-        this.$message({
-          message: '登陆成功',
-          type: 'success'
-        })
-        this.is = false
-        // 跳转到home页面
-        this.$router.push({ name: 'home' })
-      }).catch(err => {
-        if (err.response.status === 400) {
-          this.$message.error('登录失败，手机号或验证码错误')
-          this.is = false
-        }
-      })
-    },
+
     // 倒计时
     timing () {
       this.Eliminate = setInterval(() => {
