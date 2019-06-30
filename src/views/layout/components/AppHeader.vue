@@ -5,8 +5,8 @@
       <el-col :span="4" :offset="6">
         <el-dropdown>
         <span class="el-dropdown-link">
-          <img width=30 :src="userInfo.photo" alt="">
-          {{userInfo.name}}<i class="el-icon-caret-bottom el-icon--right"></i>
+          <img width=30 :src="$store.state.user.photo" alt="">
+          {{$store.state.user.name}}<i class="el-icon-caret-bottom el-icon--right"></i>
         </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item>个人信息</el-dropdown-item>
@@ -24,11 +24,11 @@ export default {
   name: 'AppHeader',
   data () {
     return {
-      userInfo: {}
+      // userInfo: {}
     }
   },
   created () {
-    this.userInfo = JSON.parse(window.localStorage.getItem('user_info'))
+    // this.userInfo = JSON.parse(window.localStorage.getItem('user_info'))
   },
   methods: {
     SignOut () {

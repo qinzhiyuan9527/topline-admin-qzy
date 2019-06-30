@@ -12,6 +12,7 @@
           <template slot-scope="scope">
             <el-switch
               v-model="scope.row.comment_status"
+              :disabled="scope.row.changeLoading"
               active-color="#13ce66"
               inactive-color="#ff4949"
               @change="handleChangeCommentStatus(scope.row)">
@@ -44,13 +45,17 @@ export default {
           response_type: 'comment'
         }
       }).then(data => {
+        data.results.forEach(item => {
+          item.changeLoading = false
+        })
         // console.log(data.results)
         this.articles = data.results
       })
     },
     // 修改文章评论状态
     handleChangeCommentStatus (scope) {
-      console.log(scope)
+      // console.log(scope)
+      scope.changeLoading = true
       this.$http({
         method: 'PUT',
         url: `/comments/status`,
@@ -61,7 +66,19 @@ export default {
           allow_comment: scope.comment_status
         }
       }).then(data => {
+        this.$message({
+          type: 'success',
+          message: '修改文章评论状态成功'
+        })
+        scope.changeLoading = false
         console.log(data)
+      }).catch(err => {
+        console.log(err)
+        this.$message({
+          type: 'warning',
+          message: '修改文章评论失败'
+        })
+        scope.changeLoading = false
       })
     }
   }

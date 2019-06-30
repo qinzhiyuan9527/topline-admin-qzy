@@ -42,6 +42,11 @@ const router = new Router({
           component: () => import('@/views/connent')
         },
         {
+          name: 'account-setting',
+          path: '/account',
+          component: () => import('@/views/account')
+        },
+        {
           name: 'article',
           path: '/article',
           component: () => import('@/views/article')
