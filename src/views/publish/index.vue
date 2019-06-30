@@ -1,37 +1,106 @@
 <template>
 <div class="block">
-  <span class="demonstration">轮播图</span>
-  <el-carousel trigger="click" height="150px">
-    <el-carousel-item v-for="item in 4" :key="item">
-      <h3 class="small">{{ item }}</h3>
-    </el-carousel-item>
-  </el-carousel>
+  <el-card class="box-card">
+    <div slot="header" class="clearfix">
+      <span>发表文章</span>
+    </div>
+    <el-form ref="form" :model="form">
+      <el-form-item class="biaoti">
+        <el-input v-model="form.title" placeholder="标题"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <!-- bidirectional data binding（双向数据绑定） -->
+        <quill-editor
+          v-model="form.content"
+          ref="myQuillEditor"
+          :options="editorOption">
+        </quill-editor>
+      </el-form-item>
+      <el-form-item label="封面">
+      </el-form-item>
+      <el-form-item label="频道">
+<!--        <el-input v-model="form.channel_id"></el-input>-->
+        <article-channel v-model="form.channel_id"></article-channel>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="AppPublish(false)">发表</el-button>
+        <el-button type="info" @click="AppPublish(true)">存入草稿</el-button>
+      </el-form-item>
+    </el-form>
+  </el-card>
+
 </div>
 </template>
 
 <script>
+import ArticleChannel from '@/components/article-channel'
+// require styles
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+import { quillEditor } from 'vue-quill-editor'
 export default {
-  name: 'publish',
+  name: 'AppPublish',
+  components: {
+    ArticleChannel,
+    quillEditor
+  },
   data () {
-    return {}
+    return {
+      form: {
+        title: '', // 文章标题
+        content: '', // 文章内容
+        cover: {
+          type: 0, // 封面类型
+          images: [] // 图片地址
+        }, // 封面
+        channel_id: '' // 文章所属频道id
+      },
+      editorOption: {} // 富文本编辑器设置
+    }
+  },
+  computed: {
+    editor () {
+      return this.$refs.myQuillEditor.quill
+    }
+  },
+  mounted () {
+    console.log('this is current quill instance object', this.editor)
+  },
+  methods: {
+    AppPublish (draft = false) {
+      this.$http({
+        method: 'POST',
+        url: '/articles',
+        data: this.form,
+        params: {
+          draft
+        }
+      }).then(data => {
+        this.$message({
+          type: 'success',
+          message: '发布成功'
+        })
+        this.$router.push({ name: 'article' })
+      }).catch(err => {
+        console.log(err)
+        this.$message({
+          type: 'warning',
+          message: '发布失败'
+        })
+      })
+    }
   }
 }
 </script>
 
 <style lang='less' scoped>
-  .el-carousel__item h3 {
-    color: #475669;
-    font-size: 14px;
-    opacity: 0.75;
-    line-height: 150px;
-    margin: 0;
+.block {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  .biaoti {
+    width: 400px;
   }
-
-  .el-carousel__item:nth-child(2n) {
-    background-color: #99a9bf;
-  }
-
-  .el-carousel__item:nth-child(2n+1) {
-    background-color: #d3dce6;
-  }
+}
 </style>

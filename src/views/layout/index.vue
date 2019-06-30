@@ -41,9 +41,6 @@ export default {
         background-color: #ebfff6;
         padding: 0px;
       }
-      .el-main {
-        background-color: #8b7285;
-      }
     }
   }
 }

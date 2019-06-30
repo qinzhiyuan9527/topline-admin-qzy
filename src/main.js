@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import ElementUI from 'element-ui'
 import axios from 'axios'
+import JSONbig from 'json-bigint'
 import 'element-ui/lib/theme-chalk/index.css'
 import './styles/index.less'
 import './styles/base.css'
@@ -15,9 +16,22 @@ Vue.use(ElementUI)
 // 只需要，例如 axios({ url: '/authorizations' })
 axios.defaults.baseURL = 'http://ttapi.research.itcast.cn/mp/v1_0/'
 // axios.defaults.baseURL = 'http://toutiao.course.itcast.cn/app/v1_0/'
+axios.defaults.transformResponse = [function (data) {
+  // data 是未经处理的后端响应数据：JSON 格式字符串
+  // Do whatever you want to transform the data
+  // return JSONbig.parse(data)
+  try {
+    // data 可能不是标准的Json 字符串 ，否则JSONbig.parse(data) 转换失败会报错
+    return JSONbig.parse(data)
+  } catch (err) {
+    // 无法转换的数据会原样返回
+    return data
+  }
+}]
 
 // 请求拦截器
 axios.interceptors.request.use(config => {
+  // console.log(1111)
   const userIfon = JSON.parse(window.localStorage.getItem('user_info'))
   if (userIfon) {
     // config.headers.Authorization = `Bearer 123`
@@ -31,7 +45,12 @@ axios.interceptors.request.use(config => {
 
 // 响应拦截器
 axios.interceptors.response.use(response => {
-  return response.data.data
+  // console.log(response)
+  if (typeof response.data === 'object' && response.data.data) {
+    return response.data.data
+  } else {
+    return response.data
+  }
 }, error => {
   const status = error.response.status
   if (status === 401) {

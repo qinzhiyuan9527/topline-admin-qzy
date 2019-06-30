@@ -73,14 +73,14 @@ export default {
   methods: {
     // 实现登陆功能
     LoginLand () {
-      console.log(this.ruleForm.mobile)
+      // console.log(this.ruleForm.mobile)
       this.is = true
       this.$http({
         method: 'POST',
         url: '/authorizations',
         data: this.ruleForm
       }).then(res => {
-        console.log(res)
+        // console.log(res)
         // 登陆成功在本地记录用户信息
         // console.log(res)
         window.localStorage.setItem('user_info', JSON.stringify(res))

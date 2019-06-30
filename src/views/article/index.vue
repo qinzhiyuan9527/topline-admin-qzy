@@ -9,17 +9,15 @@
       <el-form-item label="文章状态">
         <el-radio-group v-model="filterparams.status">
           <el-radio label="">全部</el-radio>
-          <el-radio v-for="(item, index) in statStype" :key="index" :label="index">{{item.label}}</el-radio>
+          <el-radio v-for="(item, index) in statStype" :key="index" :label="index + ''">{{item.label}}</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="频道列表">
-        <el-select v-model="filterparams.channel_id" placeholder="请选择频道">
-          <el-option v-for="item in channelsData" :key="item.id" :label="item.name" :value="item.id"></el-option>
-        </el-select>
+      <el-form-item label="频道">
+        <article-channel v-model="filterparams.channel_id"></article-channel>
       </el-form-item>
       <el-form-item label="时间选择">
         <el-date-picker
-          v-model="filterparams.begin_pubdate"
+          v-model="begin_end_pubdate"
           value-format="yyyy-MM-dd"
           @change="articleChange"
           type="daterange"
@@ -28,13 +26,13 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-button type="primary">查询</el-button>
+      <el-button type="primary" @click="articleQuery" :loading="articleOk">查询</el-button>
     </el-form>
   </el-card>
   <!--    </筛选区域>-->
 
   <!--    <内容区域>-->
-  <el-card class="content">
+  <el-card class="content" v-loading="articleOk">
     <div slot="header" class="clearfix">
       <span>共找到{{totalCount}}条符合条件的内容</span>
     </div>
@@ -68,7 +66,7 @@
       <el-table-column
         label="操作">
         <template slot-scope="scope">
-          <el-button type="success" plain>修改</el-button>
+          <el-button type="success" plain @click="$router.push(`/publish/modify/${scope.row.id}`)">修改</el-button>
           <el-button type="danger" plain @click="articledelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -94,23 +92,17 @@
 </template>
 
 <script>
+import ArticleChannel from '@/components/article-channel'
 export default {
   name: 'AppArticle',
+  components: {
+    ArticleChannel
+  },
   data () {
     return {
       tableData: [], // 列表数据
       totalCount: 0, // 总条目数
       value1: {},
-      // form: {
-      //   name: '',
-      //   region: '',
-      //   date1: '',
-      //   date2: '',
-      //   delivery: false,
-      //   type: [],
-      //   resource: '',
-      //   desc: ''
-      // },
       articleOk: false,
       statStype: [
         {
@@ -134,60 +126,98 @@ export default {
           label: '已删除'
         }
       ],
-      channelsData: [], // 频道列表数据
       filterparams: {
         status: '', // 文章状态
         channel_id: '', // 频道id
         begin_pubdate: '', // 起始时间
         end_pubdate: '' // 截止时间
-      }
+      },
+      begin_end_pubdate: [],
+      page: 1 // 分页数据
     }
   },
   created () {
     // 获取文章列表
-    this.loadArticles()
-    // 获取频道列表数据
-    this.articleChannels()
+    this.loadArticles(this.page)
   },
   methods: {
+    // 获取文章列表
     loadArticles (page = 1) {
+      // console.log(page)
+      // 过滤出有效的查询条件数据字段
+      const filterData = {}
+      for (let key in this.filterparams) {
+        if (this.filterparams[key]) {
+          filterData[key] = this.filterparams[key]
+        }
+      }
       this.articleOk = true
       this.$http({
         method: 'GET',
         url: '/articles',
         params: {
-          page,
-          per_page: 10
+          page, // 请求数据的页码，不传默认为 1
+          per_page: 10, // 请求数据的每页大小，不传默认为 10
+          ...filterData // 筛选传入的条件
         }
       }).then(data => {
-        // console.log(data)
+        this.articleOk = false
+        // console.log(4444)
         this.tableData = data.results
         this.totalCount = data.total_count
-        this.articleOk = false
+
+        // console.log('kkk')
       })
+    },
+    articleQuery () {
+      // console.log('hhh')
+      this.loadArticles(this.page)
     },
     // 设置分页页码
     handleCurrentChange (val) {
-      // console.log(val)
+      // console.log(this.filterparams.page)
+      this.page = val
       this.loadArticles(val)
     },
+    // 编辑修改功能
+    // articleModify (scope) {
+    //   // console.log(scope)
+    //   // $router.push({
+    //   //   name: 'modify',
+    //   //   params: {
+    //   //     id: scope.row.id
+    //   //   }
+    //   // })
+    //   this.$router.push({name: ''})
+    // },
     // 删除功能
     articledelete (scope) {
-      this.$http({
-        method: 'DELETE',
-        url: `/articles/${scope.id}`
-      }).then(data => {
-        console.log(data)
-      })
-    },
-    // 获取频道列表数据
-    articleChannels () {
-      this.$http({
-        method: 'GET',
-        url: '/channels'
-      }).then(data => {
-        // console.log(data.channels)
-        this.channelsData = data.channels
+      // console.log(scope)
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(() => {
+        this.$http({
+          method: 'DELETE',
+          url: `/articles/${scope.id}`
+        }).then(data => {
+          // console.log(data)
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          this.loadArticles(this.page)
+        }).catch(err => {
+          alert('出错了')
+          console.log(err)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
     },
     articleChange (value) {
