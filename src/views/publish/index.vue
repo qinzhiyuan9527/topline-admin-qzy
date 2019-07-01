@@ -17,9 +17,22 @@
         </quill-editor>
       </el-form-item>
       <el-form-item label="封面">
+        <el-radio-group v-model="form.cover.type">
+          <el-radio :label="1">单图</el-radio>
+          <el-radio :label="3">三图</el-radio>
+          <el-radio :label="0">无图</el-radio>
+          <el-radio :label="-1">自动</el-radio>
+        </el-radio-group>
+<!--        封面组件-->
+        <template v-if="form.cover.type > 0">
+          <el-row>
+            <el-col :span="5"  v-for=" n in form.cover.type" :key="n">
+              <upload-pictures v-model="form.cover.images[n - 1]"></upload-pictures>
+            </el-col>
+          </el-row>
+        </template>
       </el-form-item>
       <el-form-item label="频道">
-<!--        <el-input v-model="form.channel_id"></el-input>-->
         <article-channel v-model="form.channel_id"></article-channel>
       </el-form-item>
       <el-form-item>
@@ -34,6 +47,7 @@
 
 <script>
 import ArticleChannel from '@/components/article-channel'
+import UploadPictures from '@/components/upload-pictures'
 // require styles
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
@@ -43,6 +57,7 @@ export default {
   name: 'AppPublish',
   components: {
     ArticleChannel,
+    UploadPictures,
     quillEditor
   },
   data () {
@@ -51,7 +66,7 @@ export default {
         title: '', // 文章标题
         content: '', // 文章内容
         cover: {
-          type: 0, // 封面类型
+          type: 1, // 封面类型
           images: [] // 图片地址
         }, // 封面
         channel_id: '' // 文章所属频道id
@@ -89,29 +104,29 @@ export default {
     }
   },
   methods: {
-    AppPublish (draft = false) {
-      this.$http({
-        method: 'POST',
-        url: '/articles',
-        data: this.form,
-        params: {
-          draft
-        }
-      }).then(data => {
+    async AppPublish (draft = false) {
+      try {
+        await this.$http({
+          method: 'POST',
+          url: '/articles',
+          data: this.form,
+          params: {
+            draft
+          }
+        })
         this.isOk = false
         this.$message({
           type: 'success',
           message: '发布成功'
         })
         this.$router.push({ name: 'article' })
-      }).catch(err => {
+      } catch {
         this.isOk = true
-        console.log(err)
         this.$message({
           type: 'warning',
           message: '发布失败'
         })
-      })
+      }
     }
   }
 }

@@ -17,6 +17,20 @@
           </quill-editor>
         </el-form-item>
         <el-form-item label="封面">
+          <el-radio-group v-model="form.cover.type">
+            <el-radio :label="1">单图</el-radio>
+            <el-radio :label="3">三图</el-radio>
+            <el-radio :label="0">无图</el-radio>
+            <el-radio :label="-1">自动</el-radio>
+          </el-radio-group>
+          <!--        封面组件-->
+          <template v-if="form.cover.type > 0">
+            <el-row>
+              <el-col :span="5"  v-for=" n in form.cover.type" :key="n">
+                <upload-pictures v-model="form.cover.images[n - 1]"></upload-pictures>
+              </el-col>
+            </el-row>
+          </template>
         </el-form-item>
         <el-form-item label="频道">
           <!--        <el-input v-model="form.channel_id"></el-input>-->
@@ -34,6 +48,7 @@
 
 <script>
 import ArticleChannel from '@/components/article-channel'
+import UploadPictures from '@/components/upload-pictures'
 
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
@@ -43,6 +58,7 @@ export default {
   name: 'Appmodify',
   components: {
     quillEditor,
+    UploadPictures,
     ArticleChannel
   },
   data () {
@@ -98,36 +114,36 @@ export default {
     }
   },
   methods: {
-    articleModify () {
-      // console.log(this.$route.params.id)
-      this.$http({
-        methods: 'GET',
-        url: `/articles/${this.articleId}`
-      }).then(data => {
+    async articleModify () {
+      try {
+        const data = await this.$http({
+          methods: 'GET',
+          url: `/articles/${this.articleId}`
+        })
         this.$message({
           type: 'success',
           message: '跳转成功'
         })
         this.form = data
-      }).catch(err => {
+      } catch {
         this.$message({
           type: 'warning',
           message: '跳转失败'
         })
-        console.log(err)
-      })
+      }
     },
     // 修改文章
-    AppModify (draft) {
-      this.modifyOk = false
-      this.$http({
-        method: 'PUT',
-        url: `/articles/${this.articleId}`,
-        data: this.form,
-        params: {
-          draft
-        }
-      }).then(data => {
+    async AppModify (draft) {
+      try {
+        this.modifyOk = false
+        await this.$http({
+          method: 'PUT',
+          url: `/articles/${this.articleId}`,
+          data: this.form,
+          params: {
+            draft
+          }
+        })
         this.$message({
           type: 'success',
           message: '修改成功'
@@ -135,7 +151,9 @@ export default {
         this.$router.push({
           name: 'article'
         })
-      })
+      } catch {
+        alert('出错了')
+      }
     }
   }
 }
