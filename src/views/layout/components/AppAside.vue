@@ -25,8 +25,8 @@
         <el-menu-item index="/publish">发布文章</el-menu-item>
         <el-menu-item index="/article">内容列表</el-menu-item>
         <el-menu-item index="/connent">评论列表</el-menu-item>
-        <el-menu-item index="1-4">素材管理</el-menu-item>
-        <el-menu-item index="/publish/modify">编辑文章</el-menu-item>
+        <el-menu-item index="/image">素材管理</el-menu-item>
+<!--        <el-menu-item index="/publish/modify/:id">编辑文章</el-menu-item>-->
       </el-menu-item-group>
     </el-submenu>
     <el-submenu index="2">

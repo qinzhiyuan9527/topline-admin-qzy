@@ -56,7 +56,16 @@ export default {
         }, // 封面
         channel_id: '' // 文章所属频道id
       },
-      editorOption: {} // 富文本编辑器设置
+      editorOption: {}, // 富文本编辑器设置
+      isOk: ''
+    }
+  },
+  watch: {
+    form: {
+      handler () {
+        this.isOk = true
+      },
+      deep: true
     }
   },
   computed: {
@@ -66,6 +75,18 @@ export default {
   },
   mounted () {
     console.log('this is current quill instance object', this.editor)
+  },
+  beforeRouteLeave (to, from, next) {
+    if (this.isOk) {
+      let is = confirm('您有未保存的修改确认退出嘛')
+      if (is) {
+        next()
+      } else {
+        next(false)
+      }
+    } else {
+      next()
+    }
   },
   methods: {
     AppPublish (draft = false) {
@@ -77,12 +98,14 @@ export default {
           draft
         }
       }).then(data => {
+        this.isOk = false
         this.$message({
           type: 'success',
           message: '发布成功'
         })
         this.$router.push({ name: 'article' })
       }).catch(err => {
+        this.isOk = true
         console.log(err)
         this.$message({
           type: 'warning',

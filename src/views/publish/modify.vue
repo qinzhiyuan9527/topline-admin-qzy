@@ -56,7 +56,17 @@ export default {
         }, // 封面
         channel_id: '' // 文章所属频道id
       },
-      editorOption: {} // 富文本编辑器设置
+      editorOption: {}, // 富文本编辑器设置
+      modifyOk: 1 // 用于验证页面有没有修改
+    }
+  },
+  watch: {
+    form: {
+      handler () {
+        this.modifyOk += 1
+        // console.log(this.modifyOk)
+      },
+      deep: true
     }
   },
   computed: {
@@ -67,11 +77,25 @@ export default {
       return this.$route.params.id
     }
   },
-  mounted () {
-    console.log('this is current quill instance object', this.editor)
-  },
+  // mounted () {
+  //   // console.log('this is current quill instance object', this.editor)
+  // },
   created () {
     this.articleModify()
+  },
+  // 路由守卫
+  beforeRouteLeave (to, from, next) {
+    console.log(this.modifyOk)
+    if (this.modifyOk > 1 || this.modifyOk) {
+      let is = confirm('您有未保存的修改确认退出嘛')
+      if (is) {
+        next()
+      } else {
+        next(false)
+      }
+    } else {
+      next()
+    }
   },
   methods: {
     articleModify () {
@@ -95,6 +119,7 @@ export default {
     },
     // 修改文章
     AppModify (draft) {
+      this.modifyOk = false
       this.$http({
         method: 'PUT',
         url: `/articles/${this.articleId}`,
